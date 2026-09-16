@@ -1,17 +1,26 @@
-﻿import fs from "fs";
+import fs from "fs";
 import path from "path";
 import { DaVinciXmlBuilder } from "./core/davinciXmlBuilder.js";
 import { BRollAnalyzer } from "./core/brollAnalyzer.js";
 import { SemanticMatcher } from "./core/semanticMatcher.js";
+import { getConfig } from "./core/config.js";
 
 async function runDemo() {
   console.log("==========================================================");
   console.log(" 🚀 DinoHappyKM: AI 影片初剪 ➔ DaVinci Resolve XML 示範模擬");
   console.log("==========================================================\n");
 
+  const config = getConfig();
+  if (config.mediaRoot) {
+    console.log(`[Storage] 偵測到外接媒體庫根目錄: ${config.mediaRoot}`);
+  } else {
+    console.log(`[Storage] 使用專案預設 assets 目錄 (可建立 .env 設定 MEDIA_ROOT)`);
+  }
+
   // 1. 初始化 B-roll 沙盒資料庫
   const brollAnalyzer = new BRollAnalyzer({
-    metadataFile: path.resolve("assets/broll_metadata.json")
+    brollDir: config.bRollDir,
+    metadataFile: config.metadataFile
   });
 
   console.log("1. 建立 / 載入 B-roll 沙盒情境標籤庫...");
@@ -21,7 +30,6 @@ async function runDemo() {
       id: "broll_01",
       filename: "broll_brand_strategy.mp4",
       relativePath: "assets/b_roll/broll_brand_strategy.mp4",
-      absolutePath: path.resolve("assets/b_roll/broll_brand_strategy.mp4"),
       durationSeconds: 8.0,
       tags: ["行銷策略", "品牌定位", "會議討論", "白板規劃"],
       sceneDescription: "會議室中行銷主管與團隊在白板前熱烈討論品牌定位與成交路徑",
@@ -31,7 +39,6 @@ async function runDemo() {
       id: "broll_02",
       filename: "broll_web_coding.mp4",
       relativePath: "assets/b_roll/broll_web_coding.mp4",
-      absolutePath: path.resolve("assets/b_roll/broll_web_coding.mp4"),
       durationSeconds: 6.5,
       tags: ["網站建置", "系統開發", "工程師", "寫程式", "電腦螢幕"],
       sceneDescription: "工程師在雙螢幕前專注建置官方網站與銷售頁面系統",
@@ -41,7 +48,6 @@ async function runDemo() {
       id: "broll_03",
       filename: "broll_conversion_chart.mp4",
       relativePath: "assets/b_roll/broll_conversion_chart.mp4",
-      absolutePath: path.resolve("assets/b_roll/broll_conversion_chart.mp4"),
       durationSeconds: 7.0,
       tags: ["數據圖表", "成交路徑", "銷售轉換", "營收報表", "成效提升"],
       sceneDescription: "筆電螢幕呈現訪客轉換率與成長走勢圖表特寫",
@@ -55,7 +61,7 @@ async function runDemo() {
 
   // 2. 模擬 A-roll 原始影片與語音逐字稿 (帶精確 Timecode)
   console.log("2. 模擬 A-roll 口播主片音訊轉錄與語意分段...");
-  const aRollFile = path.resolve("assets/a_roll/speaker_marketing_overview.mp4");
+  const aRollFile = path.resolve(config.aRollDir, "speaker_marketing_overview.mp4");
   const aRollDuration = 35.0; // 35 秒口播
 
   const transcriptSegments = [
@@ -133,7 +139,8 @@ async function runDemo() {
   const xmlContent = builder.generateXml();
 
   // 輸出至 output 與 examples
-  const outputPath = path.resolve("output/davinci_roughcut_demo.xml");
+  if (!fs.existsSync(config.outputDir)) fs.mkdirSync(config.outputDir, { recursive: true });
+  const outputPath = path.resolve(config.outputDir, "davinci_roughcut_demo.xml");
   const examplePath = path.resolve("examples/sample_davinci_roughcut.xml");
   fs.writeFileSync(outputPath, xmlContent, "utf-8");
   fs.writeFileSync(examplePath, xmlContent, "utf-8");

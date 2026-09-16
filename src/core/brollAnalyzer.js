@@ -1,4 +1,4 @@
-﻿import fs from "fs";
+import fs from "fs";
 import path from "path";
 
 /**
@@ -51,8 +51,7 @@ export class BRollAnalyzer {
         this.metadata.items.push({
           id: `broll_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
           filename: f,
-          relativePath: path.join("assets/b_roll", f),
-          absolutePath: path.resolve(this.brollDir, f),
+          relativePath: `assets/b_roll/${f}`,
           durationSeconds: 5.0, // Default baseline, updated by inspection
           tags: ["未分類", path.parse(f).name],
           sceneDescription: `從檔名推斷之情境：${path.parse(f).name}`,
@@ -68,6 +67,16 @@ export class BRollAnalyzer {
     }
 
     return { total: this.metadata.items.length, added: addedCount };
+  }
+
+  /**
+   * Resolve runtime absolute path for a B-roll item (relative to current brollDir / SSD mount)
+   */
+  resolveClipPath(item) {
+    if (item.absolutePath && fs.existsSync(item.absolutePath)) {
+      return item.absolutePath;
+    }
+    return path.resolve(this.brollDir, item.filename || path.basename(item.relativePath));
   }
 
   /**

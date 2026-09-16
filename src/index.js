@@ -1,20 +1,26 @@
-﻿import fs from "fs";
+import fs from "fs";
 import path from "path";
 import { DaVinciXmlBuilder } from "./core/davinciXmlBuilder.js";
 import { BRollAnalyzer } from "./core/brollAnalyzer.js";
 import { SemanticMatcher } from "./core/semanticMatcher.js";
+import { getConfig } from "./core/config.js";
 
 /**
  * Main rough-cut pipeline runner
  */
 export async function runPipeline(options = {}) {
-  const aRollDir = options.aRollDir || path.resolve("assets/a_roll");
-  const bRollDir = options.bRollDir || path.resolve("assets/b_roll");
-  const outputDir = options.outputDir || path.resolve("output");
+  const config = getConfig();
+  const aRollDir = options.aRollDir || config.aRollDir;
+  const bRollDir = options.bRollDir || config.bRollDir;
+  const outputDir = options.outputDir || config.outputDir;
+  const metadataFile = options.metadataFile || config.metadataFile;
 
   if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
-  const brollAnalyzer = new BRollAnalyzer({ brollDir: bRollDir });
+  const brollAnalyzer = new BRollAnalyzer({
+    brollDir: bRollDir,
+    metadataFile: metadataFile
+  });
   const scanResult = brollAnalyzer.scanDirectory();
   console.log(`[BRoll] 掃描 B-roll 資料庫: 共有 ${scanResult.total} 支素材 (新增 ${scanResult.added} 支)`);
 
