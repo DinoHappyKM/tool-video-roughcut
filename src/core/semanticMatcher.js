@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Semantic Matcher & Pacing Director
  * Connects A-roll transcript segments with tagged B-roll footage.
  */
@@ -44,9 +44,11 @@ export class SemanticMatcher {
           broll.durationSeconds || 5.0
         );
 
+        const clipPath = brollAnalyzer.resolveClipPath ? brollAnalyzer.resolveClipPath(broll) : (broll.absolutePath || broll.relativePath);
+
         overlays.push({
           name: broll.filename,
-          path: broll.absolutePath,
+          path: clipPath,
           inSeconds: 0,
           outSeconds: brollDuration,
           timelineStartSeconds: segment.start,

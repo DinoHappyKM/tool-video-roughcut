@@ -1,4 +1,4 @@
-﻿import path from "path";
+import path from "path";
 
 /**
  * Escape XML special characters
@@ -14,10 +14,13 @@ function escapeXml(str) {
 }
 
 /**
- * Format local path to DaVinci Resolve file URL
+ * Format local path to DaVinci Resolve FCP 7 XML file URL (Windows & macOS compatible)
  */
-function toResolveFileUrl(filePath) {
-  const normalized = path.resolve(filePath).replace(/\\/g, "/");
+export function toResolveFileUrl(filePath) {
+  let normalized = path.resolve(filePath).replace(/\\/g, "/");
+  if (normalized.startsWith("/")) {
+    normalized = normalized.slice(1);
+  }
   return `file://localhost/${normalized}`;
 }
 

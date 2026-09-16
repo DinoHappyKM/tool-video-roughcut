@@ -1,12 +1,11 @@
 {
   "version": "1.0",
-  "updatedAt": "2026-09-16T09:08:42.180Z",
+  "updatedAt": "2026-09-16T09:33:02.596Z",
   "items": [
     {
       "id": "broll_01",
       "filename": "broll_brand_strategy.mp4",
       "relativePath": "assets/b_roll/broll_brand_strategy.mp4",
-      "absolutePath": "C:\\Users\\superuser\\.gemini\\antigravity\\scratch\\tool-video-roughcut\\assets\\b_roll\\broll_brand_strategy.mp4",
       "durationSeconds": 8,
       "tags": [
         "行銷策略",
@@ -21,7 +20,6 @@
       "id": "broll_02",
       "filename": "broll_web_coding.mp4",
       "relativePath": "assets/b_roll/broll_web_coding.mp4",
-      "absolutePath": "C:\\Users\\superuser\\.gemini\\antigravity\\scratch\\tool-video-roughcut\\assets\\b_roll\\broll_web_coding.mp4",
       "durationSeconds": 6.5,
       "tags": [
         "網站建置",
@@ -37,7 +35,6 @@
       "id": "broll_03",
       "filename": "broll_conversion_chart.mp4",
       "relativePath": "assets/b_roll/broll_conversion_chart.mp4",
-      "absolutePath": "C:\\Users\\superuser\\.gemini\\antigravity\\scratch\\tool-video-roughcut\\assets\\b_roll\\broll_conversion_chart.mp4",
       "durationSeconds": 7,
       "tags": [
         "數據圖表",

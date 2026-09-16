@@ -1,36 +1,30 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-env/
-venv/
 
 # Environment Variables
 .env
 .env.local
-.env.*.local
 
-# Large media files (keep assets directory structure via .gitkeep)
-assets/a_roll/*
-!assets/a_roll/.gitkeep
-assets/b_roll/*
-!assets/b_roll/.gitkeep
-*.mov
+# Video Media Files (Large Binaries - Stored on SSD / External Drive)
 *.mp4
+*.mov
 *.m4v
-*.wav
-*.mp3
+*.mkv
+*.braw
+*.ari
+*.r3d
+*.crm
+*.dng
+*.avi
+*.wmv
 
-# Output files
+# Generated XML Outputs (Local staging)
 output/*.xml
-output/*.fcpxml
-output/*.json
 !output/.gitkeep
 
-# IDE and OS
-.vscode/
-.idea/
+# OS / Editor Metadata
 .DS_Store
 Thumbs.db
+*.swp
+.vscode/
+.idea/
