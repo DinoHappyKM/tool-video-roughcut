@@ -1,0 +1,22 @@
+﻿{
+  "name": "tool-video-roughcut",
+  "version": "0.1.0",
+  "description": "AI Video Rough-Cut Assistant: A-roll speech-to-text & B-roll semantic matching to DaVinci Resolve XML",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "demo": "node src/demo.js",
+    "build:xml": "node src/index.js"
+  },
+  "keywords": [
+    "davinci-resolve",
+    "xml",
+    "fcpxml",
+    "ai-video-editing",
+    "rough-cut",
+    "a-roll",
+    "b-roll"
+  ],
+  "author": "DinoHappyKM",
+  "license": "MIT"
+}

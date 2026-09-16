@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xmeml>
+<xmeml version="5">
+  <sequence id="sequence-1">
+    <name>DinoHappyKM_AI_RoughCut_V1</name>
+    <duration>1050</duration>
+    <rate>
+      <timebase>30</timebase>
+      <ntsc>FALSE</ntsc>
+    </rate>
+    <media>
+      <video>
+        <format>
+          <samplecharacteristics>
+            <width>1920</width>
+            <height>1080</height>
+            <rate>
+              <timebase>30</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+          </samplecharacteristics>
+        </format>
+        <track>
+          <!-- Track 1: A-Roll Primary Dialogue -->
+          <clipitem id="aroll-clip-1">
+            <name>speaker_marketing_overview.mp4</name>
+            <duration>1050</duration>
+            <rate>
+              <timebase>30</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>0</start>
+            <end>1050</end>
+            <in>0</in>
+            <out>1050</out>
+            <file id="file-aroll-1">
+              <name>speaker_marketing_overview.mp4</name>
+              <pathurl>file://localhost/C:/Users/superuser/.gemini/antigravity/scratch/tool-video-roughcut/assets/a_roll/speaker_marketing_overview.mp4</pathurl>
+              <rate>
+                <timebase>30</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>1050</duration>
+            </file>
+          </clipitem>
+        </track>
+        <track>
+          <!-- Track 2: B-Roll Context Overlays -->
+          <clipitem id="broll-clip-1">
+            <name>broll_web_coding.mp4</name>
+            <duration>135</duration>
+            <rate>
+              <timebase>30</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>360</start>
+            <end>495</end>
+            <in>0</in>
+            <out>135</out>
+            <file id="file-broll-1">
+              <name>broll_web_coding.mp4</name>
+              <pathurl>file://localhost/C:/Users/superuser/.gemini/antigravity/scratch/tool-video-roughcut/assets/b_roll/broll_web_coding.mp4</pathurl>
+              <rate>
+                <timebase>30</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>135</duration>
+            </file>
+            <comments>匹配關鍵字 [網站建置, 系統開發] ➔ 工程師在雙螢幕前專注建置官方網站與銷售頁面系統</comments>
+          </clipitem>
+          <clipitem id="broll-clip-2">
+            <name>broll_conversion_chart.mp4</name>
+            <duration>135</duration>
+            <rate>
+              <timebase>30</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>660</start>
+            <end>795</end>
+            <in>0</in>
+            <out>135</out>
+            <file id="file-broll-2">
+              <name>broll_conversion_chart.mp4</name>
+              <pathurl>file://localhost/C:/Users/superuser/.gemini/antigravity/scratch/tool-video-roughcut/assets/b_roll/broll_conversion_chart.mp4</pathurl>
+              <rate>
+                <timebase>30</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>135</duration>
+            </file>
+            <comments>匹配關鍵字 [數據圖表, 銷售轉換] ➔ 筆電螢幕呈現訪客轉換率與成長走勢圖表特寫</comments>
+          </clipitem>
+        </track>
+      </video>
+      <audio>
+        <track>
+          <!-- Audio Track 1: A-Roll Dialogue -->
+          <clipitem id="aroll-clip-1-audio">
+            <name>speaker_marketing_overview.mp4</name>
+            <duration>1050</duration>
+            <rate>
+              <timebase>30</timebase>
+              <ntsc>FALSE</ntsc>
+            </rate>
+            <start>0</start>
+            <end>1050</end>
+            <in>0</in>
+            <out>1050</out>
+            <file id="file-aroll-1">
+              <name>speaker_marketing_overview.mp4</name>
+              <pathurl>file://localhost/C:/Users/superuser/.gemini/antigravity/scratch/tool-video-roughcut/assets/a_roll/speaker_marketing_overview.mp4</pathurl>
+              <rate>
+                <timebase>30</timebase>
+                <ntsc>FALSE</ntsc>
+              </rate>
+              <duration>1050</duration>
+            </file>
+          </clipitem>
+        </track>
+      </audio>
+    </media>
+  </sequence>
+</xmeml>
