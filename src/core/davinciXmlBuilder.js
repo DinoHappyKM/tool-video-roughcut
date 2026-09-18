@@ -45,7 +45,6 @@ export class DaVinciXmlBuilder {
     this.width = options.width || 1920;
     this.height = options.height || 1080;
     this.aRollTrack = [];
-    this.bCameraTrack = [];
   }
 
   /**
@@ -69,41 +68,12 @@ export class DaVinciXmlBuilder {
   }
 
   /**
-   * Set alternate B-camera clips. These sit on V2 and replace the A-camera
-   * picture for their selected ranges; the A-camera dialogue track remains
-   * the program audio.
-   * @param {Array<{name: string, path: string, inSeconds: number, outSeconds: number, timelineStartSeconds: number, reason: string}>} clips
-   */
-  setBCameraClips(clips) {
-    this.bCameraTrack = clips.map((c, idx) => ({
-      id: `bcam-clip-${idx + 1}`,
-      name: c.name || path.basename(c.path),
-      path: c.path,
-      fileId: `file-bcam-${idx + 1}`,
-      start: secondsToFrames(c.timelineStartSeconds, this.fps),
-      end: secondsToFrames(c.timelineStartSeconds + (c.outSeconds - c.inSeconds), this.fps),
-      in: secondsToFrames(c.inSeconds, this.fps),
-      out: secondsToFrames(c.outSeconds, this.fps),
-      duration: secondsToFrames(c.outSeconds - c.inSeconds, this.fps),
-      sourceDuration: secondsToFrames(c.sourceDurationSeconds || c.outSeconds, this.fps),
-      reason: c.reason || "Semantic context match"
-    }));
-  }
-
-  // Kept for callers from early prototypes. New timelines should use
-  // setBCameraClips so an alternate interview camera is never mislabeled as B-roll.
-  setBRollClips(clips) {
-    this.setBCameraClips(clips);
-  }
-
-  /**
    * Generate DaVinci Resolve compatible FCP 7 XML
    */
   generateXml() {
     // Calculate total sequence duration
     let maxFrames = 0;
     for (const c of this.aRollTrack) if (c.end > maxFrames) maxFrames = c.end;
-    for (const c of this.bCameraTrack) if (c.end > maxFrames) maxFrames = c.end;
 
     const xmlLines = [];
     xmlLines.push('<?xml version="1.0" encoding="UTF-8"?>');
@@ -137,13 +107,6 @@ export class DaVinciXmlBuilder {
     }
     xmlLines.push('        </track>');
 
-    // Track 2: Alternate B-camera picture. No B-roll is added by this builder.
-    xmlLines.push('        <track>');
-    xmlLines.push('          <!-- Track 2: B-Camera Alternate Angle -->');
-    for (const clip of this.bCameraTrack) {
-      xmlLines.push(this._buildClipItemXml(clip));
-    }
-    xmlLines.push('        </track>');
     xmlLines.push('      </video>');
 
     // Audio Track (A-Roll sound)

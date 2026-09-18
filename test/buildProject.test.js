@@ -46,7 +46,7 @@ test("buildProject creates XML, SRT, report, and validation output", () => {
   assert.match(fs.readFileSync(path.join(result.outputDir, "OUTPUT_TEST.srt"), "utf8"), /測試字幕/);
 });
 
-test("buildProject exports B-camera picture cuts without adding B-camera audio", () => {
+test("buildProject emits a native multicam manifest rather than a B-camera overlay", () => {
   const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), "roughcut-dual-camera-"));
   fs.mkdirSync(path.join(projectDir, "timeline"));
   fs.writeFileSync(path.join(projectDir, "A.mp4"), "fixture");
@@ -54,28 +54,29 @@ test("buildProject exports B-camera picture cuts without adding B-camera audio",
   fs.writeFileSync(path.join(projectDir, "project.json"), JSON.stringify({
     project_id: "PROJECT_DUAL",
     project_name: "Dual Camera",
-    media: { items: [
-      { media_id: "CAM_A", source_path: "A.mp4", duration_seconds: 60 },
-      { media_id: "CAM_B", source_path: "B.mp4", duration_seconds: 60 }
-    ] }
+    media: {
+      main_camera_id: "CAM_A",
+      main_audio_id: "CAM_A_AUDIO",
+      items: [
+        { media_id: "CAM_A", role: "main_camera_main_audio", filename: "A.mp4", source_path: "A.mp4", duration_seconds: 60 },
+        { media_id: "CAM_B", role: "alternate_camera", filename: "B.mp4", source_path: "B.mp4", duration_seconds: 60 }
+      ]
+    }
   }));
   const aItem = { clip_id: "A_1", name: "A", media_id: "CAM_A", source_start: 10, source_end: 14, timeline_start: 0, timeline_end: 4, transcript_text: "主聲音" };
-  const bItem = { clip_id: "B_1", name: "B", media_id: "CAM_B", source_start: 8.76, source_end: 12.76, timeline_start: 0, timeline_end: 4, reason: "Alternate angle" };
-  fs.writeFileSync(path.join(projectDir, "timeline", "timeline_dual.json"), JSON.stringify({
+  fs.writeFileSync(path.join(projectDir, "timeline", "timeline.json"), JSON.stringify({
     schema_version: "0.3.0", project_id: "PROJECT_DUAL", output_id: "OUTPUT_DUAL", topic_id: "T01", target_duration_seconds: 4, duration_seconds: 4,
     sequence: { name: "Dual", fps: 25, width: 1920, height: 1080 },
     tracks: {
-      video: [
-        { track_id: "V1", role: "main_a_roll", items: [aItem] },
-        { track_id: "V2", role: "alternate_camera", items: [bItem] }
-      ],
+      video: [{ track_id: "V1", role: "main_a_roll", items: [aItem] }],
       audio: [{ track_id: "A1", role: "main_dialogue", items: [{ ...aItem, clip_id: "A_1_AUDIO" }] }]
     }
   }));
 
-  const result = buildProject(projectDir, { timelinePath: "timeline/timeline_dual.json" });
-  const xml = fs.readFileSync(path.join(result.outputDir, "OUTPUT_DUAL.xml"), "utf8");
-  assert.match(xml, /<clipitem id="bcam-clip-1">/);
-  assert.match(xml, /<name>B<\/name>/);
-  assert.equal((xml.match(/<mediatype>audio<\/mediatype>/g) || []).length, 1);
+  const result = buildProject(projectDir);
+  const manifest = JSON.parse(fs.readFileSync(path.join(result.outputDir, "multicam_manifest.json"), "utf8"));
+  assert.equal(manifest.multicam_clip.name, "Aperture");
+  assert.equal(manifest.multicam_clip.angle_sync_mode, "sound");
+  assert.equal(manifest.multicam_clip.program_audio.media_id, "CAM_A");
+  assert.deepEqual(manifest.multicam_clip.angle_order.map(angle => angle.media_id), ["CAM_A", "CAM_B"]);
 });

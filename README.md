@@ -1,8 +1,8 @@
 # AI 訪談影片粗剪決策引擎 (DaVinci Resolve Workflow)
 
-> 用 AI 處理訪談逐字稿、Topic Mining、剪輯提案與原始時碼 mapping，由人選擇故事後，生成可在 **DaVinci Resolve 19–21** 匯入的 A-roll 或 A/B 雙機粗剪時間軸。
+> 用 AI 處理訪談逐字稿、Topic Mining、剪輯提案與原始時碼 mapping，由人選擇故事後，生成可在 **DaVinci Resolve 19–21** 匯入的 A-roll 粗剪，以及 Resolve 原生的 A/B 多機素材。
 >
-> Phase 0 已完成真實繁中素材的 A-roll 與 A/B 雙機 XML round-trip；B-roll、字卡、音樂仍延後。
+> Phase 0 已完成真實繁中素材的 A-roll XML round-trip；A/B 雙機改採 Resolve 原生 Multicam Clip，B-roll、字卡、音樂仍延後。
 
 ## Phase 0 專案輸出
 
@@ -11,8 +11,6 @@
 ```bash
 npm test
 npm run build:project -- "/absolute/path/to/PROJECT_001"
-# 產生獨立的雙機版本，不覆寫 timeline.json 的 A-roll 基線
-npm run build:project -- "/absolute/path/to/PROJECT_001" "timeline/timeline_dual_camera.json"
 ```
 
 成功後會在該專案的 `export/<output_id>/` 產生：
@@ -21,6 +19,17 @@ npm run build:project -- "/absolute/path/to/PROJECT_001" "timeline/timeline_dual
 - SRT
 - `validation_report.json`
 - `edit_report.md`
+- 若 Project 同時有 `CAM_A` 與 `CAM_B`，另會產生 `multicam_manifest.json`。這不是 XML 的 V2 視訊軌，而是供 Resolve Script 建立原生 Multicam Clip 的契約。
+
+### A/B 多機位：必須使用 Resolve 原生 Multicam Clip
+
+FCP 7 XML 能描述一般影像軌道，**不能可靠地建立 DaVinci Resolve 的可切換 Multicam Clip**。因此系統刻意禁止把 `alternate_camera` 輸出成 V2 疊畫面。
+
+1. 先在 Media Pool 匯入 A、B 原始檔。
+2. 由 `export/<output_id>/multicam_manifest.json` 產生 `Aperture` 原生 Multicam Clip：A 為 Angle 1／唯一節目主音訊，B 為 Angle 2，採 Sound Sync。
+3. 在 `Aperture` 內核對嘴型後，再由剪輯師或後續 AI 切換角度；所有切換仍是 Resolve 多機剪輯，隨時可改回 A 或 B。
+
+執行腳本前，將 `scripts/resolve/create_aperture_multicam.py` 安裝到 Resolve 的 `Fusion/Scripts/Utility` 目錄，並將環境變數 `ROUGH_CUT_MULTICAM_MANIFEST` 指向上述 manifest。腳本僅建立 Resolve project database 內的 Multicam Clip，不會改動來源檔。
 
 ---
 
@@ -28,8 +37,8 @@ npm run build:project -- "/absolute/path/to/PROJECT_001" "timeline/timeline_dual
 
 - **AI 不生出死板成片**：AI 擔任**專業剪輯助理**，不負責直接渲染出片，而是梳理結構。
 - **排好時間線，交給人類微調**：
-  - **軌道 V1 (Video 1 + Audio 1)**：A-roll 說話主片（保留完整時間軸與說話節奏）。
-  - **軌道 V2 (Video 2)**：選定的 B 機替代角度，只覆蓋畫面；節目主音訊仍固定使用 A 機。
+  - **A-roll XML (V1 + A1)**：已核准的說話主片與主音訊。
+  - **Aperture 原生 Multicam Clip**：Angle 1 是 A 機與主音訊；Angle 2 是 B 機。切鏡不是疊軌，能隨時在 Resolve 多機檢視中改選。
 - **匯入達芬奇即用（Zero-Copy）**：輸出標準 FCP 7 XML 格式，達芬奇直接引用外接硬碟原檔，秒開不佔本機磁碟。
 
 ---
@@ -55,7 +64,7 @@ npm run build:project -- "/absolute/path/to/PROJECT_001" "timeline/timeline_dual
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 🎬 DaVinci Resolve 匯入 XML ➔ 瞬間點亮雙軌時間線         │
+│ 🎬 DaVinci Resolve 匯入 XML + 建立原生 Multicam Clip      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -135,7 +144,7 @@ npm run demo
 1. 打開 **DaVinci Resolve**。
 2. 點選頂部選單：**`File (檔案)` ➔ `Import (匯入)` ➔ `Timeline... (時間線)`**（快捷鍵 `Ctrl + Shift + I` 或 `Cmd + Shift + I`）。
 3. 選擇產生的 `.xml` 檔案。
-4. 點選確定，時間線會自動建立 V1 A 機主畫面／A1 主音訊，以及可選的 V2 B 機替代畫面。
+4. 點選確定，時間線會建立 V1 A 機主畫面／A1 主音訊。若有雙機，請依本文件的原生 Multicam 流程建立 `Aperture`，不要把 B 機疊在 V2。
 
 ---
 

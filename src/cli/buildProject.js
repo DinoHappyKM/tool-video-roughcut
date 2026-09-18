@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { DaVinciXmlBuilder } from "../core/davinciXmlBuilder.js";
+import { buildMulticamManifest } from "../core/multicamManifest.js";
 import { resolveTimelineMediaPath, validateTimeline } from "../core/timelineValidator.js";
 
 function readJson(filePath) {
@@ -30,7 +31,6 @@ function buildSrt(items) {
 
 function buildReport(project, timeline, validation) {
   const primaryVideoTrack = timeline.tracks.video.find(track => track.role === "main_a_roll") || timeline.tracks.video[0];
-  const alternateCameraTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
   const videoItems = primaryVideoTrack.items;
   return [
     `# ${timeline.sequence.name}｜Edit Report`,
@@ -40,8 +40,7 @@ function buildReport(project, timeline, validation) {
     `- Target Duration: ${timeline.target_duration_seconds}s`,
     `- Final Duration: ${timeline.duration_seconds}s`,
     `- A-roll Cuts: ${videoItems.length}`,
-    `- B-camera Cutaways: ${alternateCameraTrack?.items.length || 0}`,
-    `- Multicam: ${timeline.multicam?.status || "not included"}`,
+    `- Native Multicam Manifest: ${project.media?.items?.some(item => item.role === "alternate_camera") ? "included (create in Resolve)" : "not included"}`,
     `- Titles: ${timeline.deferred_assets?.titles?.status || "not included"}`,
     `- Music: ${timeline.deferred_assets?.music?.status || "not included"}`,
     `- Validation: ${validation.valid ? "PASS" : "FAIL"}`,
@@ -49,12 +48,6 @@ function buildReport(project, timeline, validation) {
     "## Selected A-roll",
     "",
     ...videoItems.map(item => `- ${item.clip_id}: ${item.source_start}s–${item.source_end}s → ${item.timeline_start}s–${item.timeline_end}s — ${item.transcript_text || ""}`),
-    ...(alternateCameraTrack?.items.length ? [
-      "",
-      "## Selected B-camera alternate angle",
-      "",
-      ...alternateCameraTrack.items.map(item => `- ${item.clip_id}: ${item.source_start}s–${item.source_end}s → ${item.timeline_start}s–${item.timeline_end}s — ${item.reason || ""}`)
-    ] : []),
     "",
     "## Warnings / Manual Review",
     "",
@@ -82,6 +75,11 @@ export function buildProject(projectDirInput, options = {}) {
     throw new Error(`Timeline validation failed:\n${validation.errors.map(error => `- ${error}`).join("\n")}`);
   }
 
+  const alternateCameraTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
+  if (alternateCameraTrack?.items.length) {
+    throw new Error("FCP 7 XML cannot create a Resolve-native Multicam Clip. Remove alternate_camera items from the XML timeline and run the Resolve Multicam script using multicam_manifest.json instead.");
+  }
+
   const primaryVideoTrack = timeline.tracks.video.find(track => track.role === "main_a_roll") || timeline.tracks.video[0];
   const clips = primaryVideoTrack.items.map(item => ({
     name: item.name,
@@ -100,23 +98,16 @@ export function buildProject(projectDirInput, options = {}) {
     height: timeline.sequence.height
   });
   builder.setARollClips(clips);
-  const alternateCameraTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
-  if (alternateCameraTrack) {
-    const bCameraClips = alternateCameraTrack.items.map(item => ({
-      name: item.name,
-      path: resolveTimelineMediaPath(projectDir, item, project),
-      inSeconds: item.source_start,
-      outSeconds: item.source_end,
-      timelineStartSeconds: item.timeline_start,
-      sourceDurationSeconds: project.media.items.find(media => media.media_id === item.media_id)?.duration_seconds,
-      reason: item.reason
-    }));
-    builder.setBCameraClips(bCameraClips);
-  }
   const xml = builder.generateXml();
   fs.writeFileSync(path.join(outputDir, `${timeline.output_id}.xml`), xml, "utf8");
   fs.writeFileSync(path.join(outputDir, `${timeline.output_id}.srt`), buildSrt(primaryVideoTrack.items), "utf8");
   fs.writeFileSync(path.join(outputDir, "edit_report.md"), buildReport(project, timeline, validation), "utf8");
+  const multicamManifest = buildMulticamManifest(project, timeline, {
+    resolveMediaPath: media => path.resolve(projectDir, media.source_path)
+  });
+  if (multicamManifest) {
+    fs.writeFileSync(path.join(outputDir, "multicam_manifest.json"), JSON.stringify(multicamManifest, null, 2), "utf8");
+  }
 
   return { projectDir, outputDir, validation };
 }
