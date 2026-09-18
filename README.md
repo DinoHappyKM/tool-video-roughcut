@@ -1,7 +1,24 @@
-# AI 影片初剪助理 (DaVinci Resolve XML Workflow)
+# AI 訪談影片粗剪決策引擎 (DaVinci Resolve Workflow)
 
-> 專為 **DinoHappyKM** 團隊打造的行銷影音自動化剪輯助理。  
-> 透過 AI 語音辨識（A-roll 逐字稿時間戳）與 B-roll 空景情境智能標註，自動產生可在 **DaVinci Resolve** 一鍵匯入的初剪時間線 XML。
+> 用 AI 處理訪談逐字稿、Topic Mining、剪輯提案與原始時碼 mapping，由人選擇故事後，生成可在 **DaVinci Resolve Studio 19** 匯入的 A-roll 粗剪時間軸。
+>
+> 目前處於 Phase 0：先驗證真實繁中素材的單機 A-roll end-to-end；B-roll、字卡、音樂與自動多機位延後。
+
+## Phase 0 專案輸出
+
+`timeline.json` 是唯一剪輯 SSOT。匯出前會先檢查媒體是否存在、剪點是否有效、軌道是否重疊，並把 VFR 與人工復核項目列為 warning。
+
+```bash
+npm test
+npm run build:project -- "/absolute/path/to/PROJECT_001"
+```
+
+成功後會在該專案的 `export/<output_id>/` 產生：
+
+- DaVinci FCP 7 XML
+- SRT
+- `validation_report.json`
+- `edit_report.md`
 
 ---
 

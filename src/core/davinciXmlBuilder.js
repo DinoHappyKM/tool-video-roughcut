@@ -1,4 +1,5 @@
 import path from "path";
+import { pathToFileURL } from "url";
 
 /**
  * Escape XML special characters
@@ -17,18 +18,21 @@ function escapeXml(str) {
  * Format local path to DaVinci Resolve FCP 7 XML file URL (Windows & macOS compatible)
  */
 export function toResolveFileUrl(filePath) {
-  let normalized = path.resolve(filePath).replace(/\\/g, "/");
-  if (normalized.startsWith("/")) {
-    normalized = normalized.slice(1);
+  if (/^[a-zA-Z]:[\\/]/.test(filePath)) {
+    const normalized = filePath.replace(/\\/g, "/");
+    return `file://localhost/${encodeURI(normalized)}`;
   }
-  return `file://localhost/${normalized}`;
+  return pathToFileURL(path.resolve(filePath)).href.replace(/^file:\/\/\//, "file://localhost/");
 }
 
 /**
  * Convert seconds to frame count based on fps
  */
 export function secondsToFrames(seconds, fps = 30) {
-  return Math.round(seconds * fps);
+  // Decimal timecodes such as 3.70 can land infinitesimally below an exact
+  // half-frame in binary floating point. A tiny epsilon prevents a one-frame
+  // gap between otherwise contiguous clips.
+  return Math.round((seconds * fps) + 1e-7);
 }
 
 /**
@@ -42,7 +46,6 @@ export class DaVinciXmlBuilder {
     this.height = options.height || 1080;
     this.aRollTrack = [];
     this.bRollTrack = [];
-    this.audioTrack = [];
   }
 
   /**
@@ -59,7 +62,9 @@ export class DaVinciXmlBuilder {
       end: secondsToFrames(c.startSeconds + (c.outSeconds - c.inSeconds), this.fps),
       in: secondsToFrames(c.inSeconds, this.fps),
       out: secondsToFrames(c.outSeconds, this.fps),
-      duration: secondsToFrames(c.outSeconds - c.inSeconds, this.fps)
+      duration: secondsToFrames(c.outSeconds - c.inSeconds, this.fps),
+      sourceDuration: secondsToFrames(c.sourceDurationSeconds || c.outSeconds, this.fps),
+      reason: c.reason || "Approved A-roll cut"
     }));
   }
 
@@ -119,7 +124,7 @@ export class DaVinciXmlBuilder {
     xmlLines.push('        <track>');
     xmlLines.push('          <!-- Track 1: A-Roll Primary Dialogue -->');
     for (const clip of this.aRollTrack) {
-      xmlLines.push(this._buildClipItemXml(clip));
+      xmlLines.push(this._buildClipItemXml(clip, false, `${clip.id}-audio`));
     }
     xmlLines.push('        </track>');
 
@@ -137,7 +142,7 @@ export class DaVinciXmlBuilder {
     xmlLines.push('        <track>');
     xmlLines.push('          <!-- Audio Track 1: A-Roll Dialogue -->');
     for (const clip of this.aRollTrack) {
-      xmlLines.push(this._buildClipItemXml(clip, true));
+      xmlLines.push(this._buildClipItemXml(clip, true, clip.id));
     }
     xmlLines.push('        </track>');
     xmlLines.push('      </audio>');
@@ -149,10 +154,12 @@ export class DaVinciXmlBuilder {
     return xmlLines.join('\n');
   }
 
-  _buildClipItemXml(clip, isAudio = false) {
+  _buildClipItemXml(clip, isAudio = false, linkedClipId = null) {
     const fileUrl = toResolveFileUrl(clip.path);
+    const clipItemId = `${clip.id}${isAudio ? '-audio' : ''}`;
+    const mediaType = isAudio ? "audio" : "video";
     return [
-      `          <clipitem id="${clip.id}${isAudio ? '-audio' : ''}">`,
+      `          <clipitem id="${clipItemId}">`,
       `            <name>${escapeXml(clip.name)}</name>`,
       `            <duration>${clip.duration}</duration>`,
       `            <rate>`,
@@ -170,8 +177,13 @@ export class DaVinciXmlBuilder {
       `                <timebase>${this.fps}</timebase>`,
       `                <ntsc>FALSE</ntsc>`,
       `              </rate>`,
-      `              <duration>${clip.duration}</duration>`,
+      `              <duration>${clip.sourceDuration}</duration>`,
       `            </file>`,
+      `            <sourcetrack>`,
+      `              <mediatype>${mediaType}</mediatype>`,
+      ...(isAudio ? [`              <trackindex>1</trackindex>`] : []),
+      `            </sourcetrack>`,
+      linkedClipId ? `            <link><linkclipref>${linkedClipId}</linkclipref></link>` : "",
       clip.reason ? `            <comments>${escapeXml(clip.reason)}</comments>` : '',
       `          </clipitem>`
     ].filter(Boolean).join('\n');
