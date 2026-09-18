@@ -27,9 +27,10 @@ FCP 7 XML 能描述一般影像軌道，**不能可靠地建立 DaVinci Resolve 
 
 1. 先在 Media Pool 匯入 A、B 原始檔。
 2. 由 `export/<output_id>/multicam_manifest.json` 產生 `Aperture` 原生 Multicam Clip：A 為 Angle 1／唯一節目主音訊，B 為 Angle 2，採 Sound Sync。
-3. 在 `Aperture` 內核對嘴型後，再由剪輯師或後續 AI 切換角度；所有切換仍是 Resolve 多機剪輯，隨時可改回 A 或 B。
+3. 同一支腳本會把已核准的 A-roll 剪點套用到原生 Multicam Clip，建立可切換鏡位的 `Aperture_<topic>_<duration>` 粗剪時間線，並另存 `.drt`。
+4. 在時間線內核對嘴型後，再由剪輯師或後續 AI 切換角度；所有切換仍是 Resolve 多機剪輯，隨時可改回 A 或 B。
 
-執行腳本前，將 `scripts/resolve/create_aperture_multicam.py` 安裝到 Resolve 的 `Fusion/Scripts/Utility` 目錄，並將環境變數 `ROUGH_CUT_MULTICAM_MANIFEST` 指向上述 manifest。腳本僅建立 Resolve project database 內的 Multicam Clip，不會改動來源檔。
+執行腳本前，將 `scripts/resolve/create_aperture_multicam.py` 安裝到 Resolve 的 `Fusion/Scripts/Utility` 目錄，並將環境變數 `ROUGH_CUT_MULTICAM_MANIFEST` 指向上述 manifest。腳本會建立 Resolve project database 內的 Multicam Clip 與粗剪 Timeline，並輸出可再次匯入 Resolve 的 `.drt`；不會改動來源檔。
 
 ---
 

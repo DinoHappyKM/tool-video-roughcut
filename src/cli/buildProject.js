@@ -103,7 +103,9 @@ export function buildProject(projectDirInput, options = {}) {
   fs.writeFileSync(path.join(outputDir, `${timeline.output_id}.srt`), buildSrt(primaryVideoTrack.items), "utf8");
   fs.writeFileSync(path.join(outputDir, "edit_report.md"), buildReport(project, timeline, validation), "utf8");
   const multicamManifest = buildMulticamManifest(project, timeline, {
-    resolveMediaPath: media => path.resolve(projectDir, media.source_path)
+    resolveMediaPath: media => path.resolve(projectDir, media.source_path),
+    timelineName: `Aperture_${timeline.topic_id}_${timeline.target_duration_seconds}S_${timeline.selected_variant || timeline.variant_id || "A"}`,
+    drtOutputPath: path.join(outputDir, `Aperture_${timeline.topic_id}_${timeline.target_duration_seconds}S.drt`)
   });
   if (multicamManifest) {
     fs.writeFileSync(path.join(outputDir, "multicam_manifest.json"), JSON.stringify(multicamManifest, null, 2), "utf8");

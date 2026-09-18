@@ -79,4 +79,13 @@ test("buildProject emits a native multicam manifest rather than a B-camera overl
   assert.equal(manifest.multicam_clip.angle_sync_mode, "sound");
   assert.equal(manifest.multicam_clip.program_audio.media_id, "CAM_A");
   assert.deepEqual(manifest.multicam_clip.angle_order.map(angle => angle.media_id), ["CAM_A", "CAM_B"]);
+  assert.equal(manifest.edit_decisions.timeline_name, "Aperture_T01_4S_A");
+  assert.equal(manifest.edit_decisions.default_video_angle_media_id, "CAM_A");
+  assert.deepEqual(manifest.edit_decisions.segments, [{
+    clip_id: "A_1",
+    source_start_seconds: 10,
+    source_end_seconds: 14,
+    timeline_start_seconds: 0,
+    timeline_end_seconds: 4
+  }]);
 });

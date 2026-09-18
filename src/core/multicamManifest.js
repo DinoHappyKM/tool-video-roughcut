@@ -16,6 +16,9 @@ export function buildMulticamManifest(project, timeline, options = {}) {
     return null;
   }
 
+  const primaryVideoTrack = timeline.tracks?.video?.find(track => track.role === "main_a_roll") || timeline.tracks?.video?.[0];
+  const multicamName = options.name || "Aperture";
+
   return {
     schema_version: "0.3.0",
     artifact_type: "resolve_native_multicam_manifest",
@@ -23,7 +26,7 @@ export function buildMulticamManifest(project, timeline, options = {}) {
     output_id: timeline.output_id,
     status: "pending_resolve_creation",
     multicam_clip: {
-      name: options.name || "Aperture",
+      name: multicamName,
       frame_rate: timeline.sequence.fps,
       angle_sync_mode: "sound",
       use_full_clip_extents: true,
@@ -52,8 +55,19 @@ export function buildMulticamManifest(project, timeline, options = {}) {
       ]
     },
     edit_decisions: {
-      status: "not_auto_switched",
-      policy: "Create the native Multicam Clip first. Do not emit B-camera V2 overlays. Angle switching remains editable in Resolve after sync review."
+      status: "default_angle_a_pending_resolve_creation",
+      policy: "Create a Resolve-native Multicam Clip and a rough-cut timeline made from that clip. Default picture and program audio are CAM_A; every segment remains switchable to CAM_B in Resolve.",
+      timeline_name: options.timelineName || `${multicamName}_${timeline.topic_id}_${timeline.target_duration_seconds}S_${timeline.selected_variant || timeline.variant_id || "A"}`,
+      export_drt_path: options.drtOutputPath || null,
+      default_video_angle_media_id: mainCameraId,
+      program_audio_media_id: mainCameraId,
+      segments: (primaryVideoTrack?.items || []).map(item => ({
+        clip_id: item.clip_id,
+        source_start_seconds: item.source_start,
+        source_end_seconds: item.source_end,
+        timeline_start_seconds: item.timeline_start,
+        timeline_end_seconds: item.timeline_end
+      }))
     },
     manual_review: [
       "Both sources are VFR. Verify a visible spoken phrase after Resolve's Sound sync before making angle decisions.",
