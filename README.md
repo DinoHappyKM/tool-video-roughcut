@@ -30,7 +30,7 @@ FCP 7 XML 能描述一般影像軌道，**不能可靠地建立 DaVinci Resolve 
 3. 同一支腳本會把已核准的 A-roll 剪點套用到原生 Multicam Clip，建立可切換鏡位的 `Aperture_<topic>_<duration>` 粗剪時間線，並另存 `.drt`。
 4. 在時間線內核對嘴型後，再由剪輯師或後續 AI 切換角度；所有切換仍是 Resolve 多機剪輯，隨時可改回 A 或 B。
 
-執行腳本前，將 `scripts/resolve/create_aperture_multicam.py` 安裝成實體檔案到 Resolve 的 `Fusion/Scripts/Edit` 目錄，並將環境變數 `ROUGH_CUT_MULTICAM_MANIFEST` 指向上述 manifest。重新啟動 Resolve 後從 `Workspace > Scripts > Edit > Create Aperture Multicam` 執行。腳本會建立 Resolve project database 內的 Multicam Clip 與粗剪 Timeline，並輸出可再次匯入 Resolve 的 `.drt`；不會改動來源檔。
+執行腳本前，將 `scripts/resolve/create_aperture_multicam.lua` 與專案用的 `create_aperture_multicam.config.lua` 安裝成實體檔案到 Resolve 的 `Fusion/Scripts/Edit` 目錄。Lua 是目前 macOS Resolve 21 的主要執行路徑；Python 版保留給已啟用 Python／外部 Scripting API 的環境。重新啟動 Resolve 後從 `Workspace > Scripts > Edit > Create Aperture Multicam` 執行。腳本會優先沿用 Media Pool 已存在的 Multicam Clip，否則自動匯入 A/B 並建立；接著建立粗剪 Timeline 並輸出可再次匯入 Resolve 的 `.drt`，不會改動來源檔。
 
 ---
 
