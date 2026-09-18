@@ -32,6 +32,9 @@ function buildSrt(items) {
 function buildReport(project, timeline, validation) {
   const primaryVideoTrack = timeline.tracks.video.find(track => track.role === "main_a_roll") || timeline.tracks.video[0];
   const videoItems = primaryVideoTrack.items;
+  const bCamTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
+  const titleTrack = timeline.tracks.video.find(track => track.role === "title_cards");
+  const bgmTrack = timeline.tracks.audio?.find(track => track.role === "background_music");
   return [
     `# ${timeline.sequence.name}｜Edit Report`,
     "",
@@ -40,14 +43,26 @@ function buildReport(project, timeline, validation) {
     `- Target Duration: ${timeline.target_duration_seconds}s`,
     `- Final Duration: ${timeline.duration_seconds}s`,
     `- A-roll Cuts: ${videoItems.length}`,
-    `- Native Multicam Manifest: ${project.media?.items?.some(item => item.role === "alternate_camera") ? "included (create in Resolve)" : "not included"}`,
-    `- Titles: ${timeline.deferred_assets?.titles?.status || "not included"}`,
-    `- Music: ${timeline.deferred_assets?.music?.status || "not included"}`,
+    `- B-camera Cutaways: ${bCamTrack?.items?.length || 0}`,
+    `- Title Cards: ${titleTrack?.items?.length || 0}`,
+    `- Background Music: ${bgmTrack?.items?.length || 0}`,
     `- Validation: ${validation.valid ? "PASS" : "FAIL"}`,
     "",
     "## Selected A-roll",
     "",
     ...videoItems.map(item => `- ${item.clip_id}: ${item.source_start}s–${item.source_end}s → ${item.timeline_start}s–${item.timeline_end}s — ${item.transcript_text || ""}`),
+    ...(bCamTrack?.items?.length ? [
+      "",
+      "## Selected B-camera alternate angle",
+      "",
+      ...bCamTrack.items.map(item => `- ${item.clip_id}: ${item.source_start}s–${item.source_end}s → ${item.timeline_start}s–${item.timeline_end}s — ${item.reason || ""}`)
+    ] : []),
+    ...(titleTrack?.items?.length ? [
+      "",
+      "## Selected Title Cards",
+      "",
+      ...titleTrack.items.map(item => `- ${item.clip_id}: ${item.timeline_start}s–${item.timeline_end}s — ${item.name || ""}`)
+    ] : []),
     "",
     "## Warnings / Manual Review",
     "",
@@ -75,13 +90,13 @@ export function buildProject(projectDirInput, options = {}) {
     throw new Error(`Timeline validation failed:\n${validation.errors.map(error => `- ${error}`).join("\n")}`);
   }
 
-  const alternateCameraTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
-  if (alternateCameraTrack?.items.length) {
-    throw new Error("FCP 7 XML cannot create a Resolve-native Multicam Clip. Remove alternate_camera items from the XML timeline and run the Resolve Multicam script using multicam_manifest.json instead.");
-  }
-
   const primaryVideoTrack = timeline.tracks.video.find(track => track.role === "main_a_roll") || timeline.tracks.video[0];
-  const clips = primaryVideoTrack.items.map(item => ({
+  const alternateCameraTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
+  const titleCardsTrack = timeline.tracks.video.find(track => track.role === "title_cards");
+  const bgmTrack = timeline.tracks.audio?.find(track => track.role === "background_music");
+
+  const mapItemToClip = item => ({
+    id: item.clip_id,
     name: item.name,
     path: resolveTimelineMediaPath(projectDir, item, project),
     inSeconds: item.source_start,
@@ -89,7 +104,12 @@ export function buildProject(projectDirInput, options = {}) {
     startSeconds: item.timeline_start,
     sourceDurationSeconds: project.media.items.find(media => media.media_id === item.media_id)?.duration_seconds,
     reason: item.reason
-  }));
+  });
+
+  const aRollClips = primaryVideoTrack ? primaryVideoTrack.items.map(mapItemToClip) : [];
+  const bCamClips = alternateCameraTrack ? alternateCameraTrack.items.map(mapItemToClip) : [];
+  const titleClips = titleCardsTrack ? titleCardsTrack.items.map(mapItemToClip) : [];
+  const bgmClips = bgmTrack ? bgmTrack.items.map(mapItemToClip) : [];
 
   const builder = new DaVinciXmlBuilder({
     sequenceName: timeline.sequence.name,
@@ -97,7 +117,11 @@ export function buildProject(projectDirInput, options = {}) {
     width: timeline.sequence.width,
     height: timeline.sequence.height
   });
-  builder.setARollClips(clips);
+  builder.setARollClips(aRollClips);
+  if (bCamClips.length) builder.setBCamClips(bCamClips);
+  if (titleClips.length) builder.setTitleCards(titleClips);
+  if (bgmClips.length) builder.setBackgroundMusic(bgmClips);
+
   const xml = builder.generateXml();
   fs.writeFileSync(path.join(outputDir, `${timeline.output_id}.xml`), xml, "utf8");
   fs.writeFileSync(path.join(outputDir, `${timeline.output_id}.srt`), buildSrt(primaryVideoTrack.items), "utf8");

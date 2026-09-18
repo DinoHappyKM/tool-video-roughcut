@@ -45,6 +45,37 @@ export class DaVinciXmlBuilder {
     this.width = options.width || 1920;
     this.height = options.height || 1080;
     this.aRollTrack = [];
+    this.bCamTrack = [];
+    this.titleTrack = [];
+    this.bgmTrack = [];
+  }
+
+  _normalizeClip(c, defaultId, defaultFileId, defaultReason = "") {
+    const inSec = c.inSeconds ?? c.source_start ?? 0;
+    const outSec = c.outSeconds ?? c.source_end ?? 0;
+    const startSec = c.startSeconds ?? c.timeline_start ?? 0;
+    const endSec = c.timeline_end ?? (startSec + (outSec - inSec));
+    const durationSec = outSec - inSec;
+
+    const startFrames = secondsToFrames(startSec, this.fps);
+    const endFrames = secondsToFrames(endSec, this.fps);
+    const inFrames = secondsToFrames(inSec, this.fps);
+    const outFrames = secondsToFrames(outSec, this.fps);
+    const durationFrames = secondsToFrames(durationSec, this.fps);
+
+    return {
+      id: c.id || c.clip_id || defaultId,
+      name: c.name || path.basename(c.path || ""),
+      path: c.path,
+      fileId: c.fileId || defaultFileId,
+      start: startFrames,
+      end: endFrames,
+      in: inFrames,
+      out: outFrames,
+      duration: durationFrames,
+      sourceDuration: secondsToFrames(c.sourceDurationSeconds || c.source_duration || outSec, this.fps),
+      reason: c.reason || defaultReason
+    };
   }
 
   /**
@@ -52,28 +83,56 @@ export class DaVinciXmlBuilder {
    * @param {Array<{name: string, path: string, inSeconds: number, outSeconds: number, startSeconds: number}>} clips
    */
   setARollClips(clips) {
-    this.aRollTrack = clips.map((c, idx) => ({
-      id: `aroll-clip-${idx + 1}`,
-      name: c.name || path.basename(c.path),
-      path: c.path,
-      fileId: `file-aroll-${idx + 1}`,
-      start: secondsToFrames(c.startSeconds, this.fps),
-      end: secondsToFrames(c.startSeconds + (c.outSeconds - c.inSeconds), this.fps),
-      in: secondsToFrames(c.inSeconds, this.fps),
-      out: secondsToFrames(c.outSeconds, this.fps),
-      duration: secondsToFrames(c.outSeconds - c.inSeconds, this.fps),
-      sourceDuration: secondsToFrames(c.sourceDurationSeconds || c.outSeconds, this.fps),
-      reason: c.reason || "Approved A-roll cut"
-    }));
+    this.aRollTrack = (clips || []).map((c, idx) =>
+      this._normalizeClip(c, `aroll-clip-${idx + 1}`, `file-aroll-${idx + 1}`, "Approved A-roll cut")
+    );
+  }
+
+  /**
+   * Set the secondary B-camera cutaway clips
+   * @param {Array<{name: string, path: string, inSeconds: number, outSeconds: number, startSeconds: number}>} clips
+   */
+  setBCamClips(clips) {
+    this.bCamTrack = (clips || []).map((c, idx) =>
+      this._normalizeClip(c, `bcam-clip-${idx + 1}`, `file-bcam-${idx + 1}`, "B-camera alternate angle")
+    );
+  }
+
+  /**
+   * Set the title card / graphic overlay clips
+   * @param {Array<{name: string, path: string, inSeconds: number, outSeconds: number, startSeconds: number}>} cards
+   */
+  setTitleCards(cards) {
+    this.titleTrack = (cards || []).map((c, idx) =>
+      this._normalizeClip(c, `title-clip-${idx + 1}`, `file-title-${idx + 1}`, "Title card overlay")
+    );
+  }
+
+  /**
+   * Set the background music clips
+   * @param {Array<{name: string, path: string, inSeconds: number, outSeconds: number, startSeconds: number}>} tracks
+   */
+  setBackgroundMusic(tracks) {
+    this.bgmTrack = (tracks || []).map((c, idx) =>
+      this._normalizeClip(c, `bgm-clip-${idx + 1}`, `file-bgm-${idx + 1}`, "Background music")
+    );
   }
 
   /**
    * Generate DaVinci Resolve compatible FCP 7 XML
    */
   generateXml() {
-    // Calculate total sequence duration
+    // Calculate total sequence duration across all active tracks
+    const allClips = [
+      ...this.aRollTrack,
+      ...this.bCamTrack,
+      ...this.titleTrack,
+      ...this.bgmTrack
+    ];
     let maxFrames = 0;
-    for (const c of this.aRollTrack) if (c.end > maxFrames) maxFrames = c.end;
+    for (const c of allClips) {
+      if (c.end > maxFrames) maxFrames = c.end;
+    }
 
     const xmlLines = [];
     xmlLines.push('<?xml version="1.0" encoding="UTF-8"?>');
@@ -107,18 +166,49 @@ export class DaVinciXmlBuilder {
     }
     xmlLines.push('        </track>');
 
+    // Track 2: B-Camera Alternate Angle (if present)
+    if (this.bCamTrack.length > 0) {
+      xmlLines.push('        <track>');
+      xmlLines.push('          <!-- Track 2: B-Camera Alternate Angle -->');
+      for (const clip of this.bCamTrack) {
+        xmlLines.push(this._buildClipItemXml(clip, false, null));
+      }
+      xmlLines.push('        </track>');
+    }
+
+    // Track 3: Title Cards / Overlays (if present)
+    if (this.titleTrack.length > 0) {
+      xmlLines.push('        <track>');
+      xmlLines.push('          <!-- Track 3: Title Cards and Graphics -->');
+      for (const clip of this.titleTrack) {
+        xmlLines.push(this._buildClipItemXml(clip, false, null));
+      }
+      xmlLines.push('        </track>');
+    }
+
     xmlLines.push('      </video>');
 
-    // Audio Track (A-Roll sound)
+    // Audio Tracks
     xmlLines.push('      <audio>');
+    // Audio Track 1: A-Roll Dialogue
     xmlLines.push('        <track>');
     xmlLines.push('          <!-- Audio Track 1: A-Roll Dialogue -->');
     for (const clip of this.aRollTrack) {
       xmlLines.push(this._buildClipItemXml(clip, true, clip.id));
     }
     xmlLines.push('        </track>');
-    xmlLines.push('      </audio>');
 
+    // Audio Track 2: Background Music (if present)
+    if (this.bgmTrack.length > 0) {
+      xmlLines.push('        <track>');
+      xmlLines.push('          <!-- Audio Track 2: Background Music -->');
+      for (const clip of this.bgmTrack) {
+        xmlLines.push(this._buildClipItemXml(clip, true, null));
+      }
+      xmlLines.push('        </track>');
+    }
+
+    xmlLines.push('      </audio>');
     xmlLines.push('    </media>');
     xmlLines.push('  </sequence>');
     xmlLines.push('</xmeml>');
@@ -128,7 +218,7 @@ export class DaVinciXmlBuilder {
 
   _buildClipItemXml(clip, isAudio = false, linkedClipId = null) {
     const fileUrl = toResolveFileUrl(clip.path);
-    const clipItemId = `${clip.id}${isAudio ? '-audio' : ''}`;
+    const clipItemId = linkedClipId && isAudio ? `${clip.id}-audio` : clip.id;
     const mediaType = isAudio ? "audio" : "video";
     return [
       `          <clipitem id="${clipItemId}">`,

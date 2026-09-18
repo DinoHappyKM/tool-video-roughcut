@@ -6,18 +6,43 @@ local function fail(message)
     error(message)
 end
 
-local scriptSource = debug.getinfo(1, "S").source
-local scriptPath = scriptSource:sub(1, 1) == "@" and scriptSource:sub(2) or scriptSource
-local scriptDir = scriptPath:match("^(.*[/\\])") or "./"
-local configPath = scriptDir .. "create_aperture_multicam.config"
-local configFile = io.open(configPath, "r")
-if not configFile then
-    fail("Missing config: " .. configPath)
+local configFilename = "create_aperture_multicam.config"
+local configCandidates = {}
+local configuredPath = os.getenv("APERTURE_MULTICAM_CONFIG")
+if configuredPath and configuredPath ~= "" then
+    table.insert(configCandidates, configuredPath)
 end
-configFile:close()
-local config = dofile(configPath)
+local home = os.getenv("HOME")
+if home and home ~= "" then
+    table.insert(configCandidates, home .. "/Library/Application Support/Blackmagic Design/DaVinci Resolve/Fusion/Scripts/Edit/" .. configFilename)
+    table.insert(configCandidates, home .. "/.local/share/DaVinciResolve/Fusion/Scripts/Edit/" .. configFilename)
+end
+local appData = os.getenv("APPDATA")
+if appData and appData ~= "" then
+    table.insert(configCandidates, appData .. "\\Blackmagic Design\\DaVinci Resolve\\Support\\Fusion\\Scripts\\Edit\\" .. configFilename)
+end
 
-local resolve = bmd.scriptapp("Resolve")
+local config = nil
+local configPath = nil
+for _, candidate in ipairs(configCandidates) do
+    local loaded, result = pcall(dofile, candidate)
+    if loaded and type(result) == "table" then
+        configPath = candidate
+        config = result
+        break
+    end
+end
+if not configPath then
+    fail("Missing " .. configFilename .. " in the standard Resolve Scripts/Edit folder.")
+end
+
+local resolve = nil
+if type(Resolve) == "function" then
+    resolve = Resolve()
+end
+if not resolve and bmd and type(bmd.scriptapp) == "function" then
+    resolve = bmd.scriptapp("Resolve")
+end
 if not resolve then
     fail("Resolve scripting is unavailable in this session.")
 end
@@ -167,5 +192,15 @@ if config.drt_output_path and config.drt_output_path ~= "" then
         print("[Aperture Multicam] WARNING: Timeline exists but DRT export failed.")
     end
 end
-projectManager:SaveProject()
+if not projectManager:SaveProject() then
+    fail("Resolve could not save the current project before export.")
+end
+if config.drp_output_path and config.drp_output_path ~= "" then
+    local exported = projectManager:ExportProject(project:GetName(), config.drp_output_path, false)
+    if exported then
+        print("[Aperture Multicam] Exported DRP: " .. config.drp_output_path)
+    else
+        fail("Resolve could not export the DRP project package.")
+    end
+end
 print("[Aperture Multicam] Complete. Every timeline segment remains a native switchable Multicam Clip.")

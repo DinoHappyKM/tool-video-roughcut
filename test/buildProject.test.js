@@ -89,3 +89,58 @@ test("buildProject emits a native multicam manifest rather than a B-camera overl
     timeline_end_seconds: 4
   }]);
 });
+
+test("buildProject exports multi-track XML when alternate_camera, title_cards, and music are present", () => {
+  const projectDir = fs.mkdtempSync(path.join(os.tmpdir(), "roughcut-5track-"));
+  fs.mkdirSync(path.join(projectDir, "timeline"));
+  for (const f of ["A.mp4", "B.mp4", "Title.png", "BGM.wav"]) {
+    fs.writeFileSync(path.join(projectDir, f), "fixture");
+  }
+  fs.writeFileSync(path.join(projectDir, "project.json"), JSON.stringify({
+    project_id: "PROJECT_5TRACK",
+    project_name: "5-Track Project",
+    media: {
+      items: [
+        { media_id: "CAM_A", role: "main_camera_main_audio", source_path: "A.mp4", duration_seconds: 60 },
+        { media_id: "CAM_B", role: "alternate_camera", source_path: "B.mp4", duration_seconds: 60 },
+        { media_id: "TITLE_1", role: "title_card", source_path: "Title.png", duration_seconds: 10 },
+        { media_id: "BGM_1", role: "music", source_path: "BGM.wav", duration_seconds: 60 }
+      ]
+    }
+  }));
+
+  const aItem = { clip_id: "A_1", name: "A", media_id: "CAM_A", source_start: 10, source_end: 20, timeline_start: 0, timeline_end: 10, transcript_text: "測試" };
+  const bItem = { clip_id: "B_1", name: "B", media_id: "CAM_B", source_start: 12, source_end: 16, timeline_start: 2, timeline_end: 6, reason: "Cutaway" };
+  const titleItem = { clip_id: "T_1", name: "Title", media_id: "TITLE_1", source_start: 0, source_end: 3, timeline_start: 0, timeline_end: 3 };
+  const bgmItem = { clip_id: "M_1", name: "BGM", media_id: "BGM_1", source_start: 0, source_end: 10, timeline_start: 0, timeline_end: 10 };
+
+  fs.writeFileSync(path.join(projectDir, "timeline", "timeline.json"), JSON.stringify({
+    schema_version: "0.3.0", project_id: "PROJECT_5TRACK", output_id: "OUTPUT_5TRACK", topic_id: "T01", target_duration_seconds: 10, duration_seconds: 10,
+    sequence: { name: "Full5Track", fps: 25, width: 1920, height: 1080 },
+    tracks: {
+      video: [
+        { track_id: "V1", role: "main_a_roll", items: [aItem] },
+        { track_id: "V2", role: "alternate_camera", items: [bItem] },
+        { track_id: "V3", role: "title_cards", items: [titleItem] }
+      ],
+      audio: [
+        { track_id: "A1", role: "main_dialogue", items: [{ ...aItem, clip_id: "A_1_AUDIO" }] },
+        { track_id: "A2", role: "background_music", items: [bgmItem] }
+      ]
+    }
+  }));
+
+  const result = buildProject(projectDir);
+  assert.equal(result.validation.valid, true);
+  const xml = fs.readFileSync(path.join(result.outputDir, "OUTPUT_5TRACK.xml"), "utf8");
+  assert.match(xml, /Track 1: A-Roll Primary Dialogue/);
+  assert.match(xml, /Track 2: B-Camera Alternate Angle/);
+  assert.match(xml, /Track 3: Title Cards and Graphics/);
+  assert.match(xml, /Audio Track 1: A-Roll Dialogue/);
+  assert.match(xml, /Audio Track 2: Background Music/);
+  const report = fs.readFileSync(path.join(result.outputDir, "edit_report.md"), "utf8");
+  assert.match(report, /- B-camera Cutaways: 1/);
+  assert.match(report, /- Title Cards: 1/);
+  assert.match(report, /- Background Music: 1/);
+});
+
