@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 """Create the Resolve-native Multicam Clip described by multicam_manifest.json.
 
-Run this *inside DaVinci Resolve* from Workspace > Scripts > Utility. It never
+Run this *inside DaVinci Resolve* from Workspace > Scripts > Edit. It never
 modifies source media. It creates a Media Pool Multicam Clip named Aperture.
 """
 
@@ -94,7 +95,12 @@ def main(manifest_path):
                 expected_path = os.path.normpath(os.path.join(manifest_dir, expected_path))
             item = find_media_item(media_pool, expected_path, angle["filename"])
             if not item:
-                fail("Import this source into the Media Pool first: " + angle["filename"])
+                imported = media_pool.ImportMedia([expected_path]) or []
+                item = imported[0] if imported else None
+                if item:
+                    print("[Aperture Multicam] Imported source: " + angle["filename"])
+            if not item:
+                fail("Resolve could not import this source: " + angle["filename"])
             clips.append(item)
 
         options = {
