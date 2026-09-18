@@ -1,8 +1,8 @@
 # AI 訪談影片粗剪決策引擎 (DaVinci Resolve Workflow)
 
-> 用 AI 處理訪談逐字稿、Topic Mining、剪輯提案與原始時碼 mapping，由人選擇故事後，生成可在 **DaVinci Resolve Studio 19** 匯入的 A-roll 粗剪時間軸。
+> 用 AI 處理訪談逐字稿、Topic Mining、剪輯提案與原始時碼 mapping，由人選擇故事後，生成可在 **DaVinci Resolve 19–21** 匯入的 A-roll 或 A/B 雙機粗剪時間軸。
 >
-> 目前處於 Phase 0：先驗證真實繁中素材的單機 A-roll end-to-end；B-roll、字卡、音樂與自動多機位延後。
+> Phase 0 已完成真實繁中素材的 A-roll 與 A/B 雙機 XML round-trip；B-roll、字卡、音樂仍延後。
 
 ## Phase 0 專案輸出
 
@@ -11,6 +11,8 @@
 ```bash
 npm test
 npm run build:project -- "/absolute/path/to/PROJECT_001"
+# 產生獨立的雙機版本，不覆寫 timeline.json 的 A-roll 基線
+npm run build:project -- "/absolute/path/to/PROJECT_001" "timeline/timeline_dual_camera.json"
 ```
 
 成功後會在該專案的 `export/<output_id>/` 產生：
@@ -27,7 +29,7 @@ npm run build:project -- "/absolute/path/to/PROJECT_001"
 - **AI 不生出死板成片**：AI 擔任**專業剪輯助理**，不負責直接渲染出片，而是梳理結構。
 - **排好時間線，交給人類微調**：
   - **軌道 V1 (Video 1 + Audio 1)**：A-roll 說話主片（保留完整時間軸與說話節奏）。
-  - **軌道 V2 (Video 2)**：AI 依據口播逐字稿語意，在關鍵秒數精準疊加情境 B-roll（例如提到「數據轉換」自動切入「轉換率圖表」）。
+  - **軌道 V2 (Video 2)**：選定的 B 機替代角度，只覆蓋畫面；節目主音訊仍固定使用 A 機。
 - **匯入達芬奇即用（Zero-Copy）**：輸出標準 FCP 7 XML 格式，達芬奇直接引用外接硬碟原檔，秒開不佔本機磁碟。
 
 ---
@@ -133,7 +135,7 @@ npm run demo
 1. 打開 **DaVinci Resolve**。
 2. 點選頂部選單：**`File (檔案)` ➔ `Import (匯入)` ➔ `Timeline... (時間線)`**（快捷鍵 `Ctrl + Shift + I` 或 `Cmd + Shift + I`）。
 3. 選擇產生的 `.xml` 檔案。
-4. 點選確定，時間線會自動建立雙軌道（V1 口播 + V2 情境 B-roll 覆蓋）！
+4. 點選確定，時間線會自動建立 V1 A 機主畫面／A1 主音訊，以及可選的 V2 B 機替代畫面。
 
 ---
 

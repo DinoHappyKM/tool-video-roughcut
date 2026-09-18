@@ -42,3 +42,14 @@ test("contiguous decimal-second clips stay contiguous after frame conversion", (
   const xml = builder.generateXml();
   assert.match(xml, /<end>93<\/end>[\s\S]*?<clipitem id="aroll-clip-2">[\s\S]*?<start>93<\/start>/);
 });
+
+test("builder places selected B-camera shots on the alternate picture track only", () => {
+  const builder = new DaVinciXmlBuilder({ fps: 25 });
+  builder.setARollClips([{ name: "A", path: "/tmp/A.mp4", inSeconds: 10, outSeconds: 14, startSeconds: 0 }]);
+  builder.setBCameraClips([{ name: "B", path: "/tmp/B.mp4", inSeconds: 8.76, outSeconds: 12.76, timelineStartSeconds: 0 }]);
+  const xml = builder.generateXml();
+  assert.match(xml, /Track 2: B-Camera Alternate Angle/);
+  assert.match(xml, /<clipitem id="bcam-clip-1">/);
+  assert.match(xml, /<pathurl>file:\/\/localhost\/tmp\/B.mp4<\/pathurl>/);
+  assert.doesNotMatch(xml, /B-Roll Context Overlays/);
+});

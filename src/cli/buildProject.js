@@ -29,7 +29,9 @@ function buildSrt(items) {
 }
 
 function buildReport(project, timeline, validation) {
-  const videoItems = timeline.tracks.video.flatMap(track => track.items);
+  const primaryVideoTrack = timeline.tracks.video.find(track => track.role === "main_a_roll") || timeline.tracks.video[0];
+  const alternateCameraTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
+  const videoItems = primaryVideoTrack.items;
   return [
     `# ${timeline.sequence.name}｜Edit Report`,
     "",
@@ -38,6 +40,7 @@ function buildReport(project, timeline, validation) {
     `- Target Duration: ${timeline.target_duration_seconds}s`,
     `- Final Duration: ${timeline.duration_seconds}s`,
     `- A-roll Cuts: ${videoItems.length}`,
+    `- B-camera Cutaways: ${alternateCameraTrack?.items.length || 0}`,
     `- Multicam: ${timeline.multicam?.status || "not included"}`,
     `- Titles: ${timeline.deferred_assets?.titles?.status || "not included"}`,
     `- Music: ${timeline.deferred_assets?.music?.status || "not included"}`,
@@ -46,6 +49,12 @@ function buildReport(project, timeline, validation) {
     "## Selected A-roll",
     "",
     ...videoItems.map(item => `- ${item.clip_id}: ${item.source_start}s–${item.source_end}s → ${item.timeline_start}s–${item.timeline_end}s — ${item.transcript_text || ""}`),
+    ...(alternateCameraTrack?.items.length ? [
+      "",
+      "## Selected B-camera alternate angle",
+      "",
+      ...alternateCameraTrack.items.map(item => `- ${item.clip_id}: ${item.source_start}s–${item.source_end}s → ${item.timeline_start}s–${item.timeline_end}s — ${item.reason || ""}`)
+    ] : []),
     "",
     "## Warnings / Manual Review",
     "",
@@ -54,10 +63,11 @@ function buildReport(project, timeline, validation) {
   ].join("\n");
 }
 
-export function buildProject(projectDirInput) {
+export function buildProject(projectDirInput, options = {}) {
   const projectDir = path.resolve(projectDirInput);
   const project = readJson(path.join(projectDir, "project.json"));
-  const timeline = readJson(path.join(projectDir, "timeline", "timeline.json"));
+  const timelinePath = path.resolve(projectDir, options.timelinePath || path.join("timeline", "timeline.json"));
+  const timeline = readJson(timelinePath);
   const validation = validateTimeline(timeline, { projectDir, project });
   const outputDir = path.join(projectDir, "export", timeline.output_id);
   fs.mkdirSync(outputDir, { recursive: true });
@@ -90,6 +100,19 @@ export function buildProject(projectDirInput) {
     height: timeline.sequence.height
   });
   builder.setARollClips(clips);
+  const alternateCameraTrack = timeline.tracks.video.find(track => track.role === "alternate_camera");
+  if (alternateCameraTrack) {
+    const bCameraClips = alternateCameraTrack.items.map(item => ({
+      name: item.name,
+      path: resolveTimelineMediaPath(projectDir, item, project),
+      inSeconds: item.source_start,
+      outSeconds: item.source_end,
+      timelineStartSeconds: item.timeline_start,
+      sourceDurationSeconds: project.media.items.find(media => media.media_id === item.media_id)?.duration_seconds,
+      reason: item.reason
+    }));
+    builder.setBCameraClips(bCameraClips);
+  }
   const xml = builder.generateXml();
   fs.writeFileSync(path.join(outputDir, `${timeline.output_id}.xml`), xml, "utf8");
   fs.writeFileSync(path.join(outputDir, `${timeline.output_id}.srt`), buildSrt(primaryVideoTrack.items), "utf8");
@@ -101,12 +124,13 @@ export function buildProject(projectDirInput) {
 const isDirectRun = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isDirectRun) {
   const projectDir = process.argv[2];
+  const timelinePath = process.argv[3];
   if (!projectDir) {
     console.error("Usage: npm run build:project -- /absolute/path/to/project");
     process.exitCode = 2;
   } else {
     try {
-      const result = buildProject(projectDir);
+      const result = buildProject(projectDir, timelinePath ? { timelinePath } : {});
       console.log(`Validation: PASS (${result.validation.warnings.length} warning(s))`);
       console.log(`Export: ${result.outputDir}`);
       for (const warning of result.validation.warnings) console.warn(`Warning: ${warning}`);
