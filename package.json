@@ -6,7 +6,9 @@
   "main": "src/index.js",
   "scripts": {
     "demo": "node src/demo.js",
-    "build:xml": "node src/index.js"
+    "build:xml": "node src/index.js",
+    "build:project": "node src/cli/buildProject.js",
+    "test": "node --test"
   },
   "keywords": [
     "davinci-resolve",
@@ -18,5 +20,6 @@
     "b-roll"
   ],
   "author": "DinoHappyKM",
-  "license": "MIT"
+  "license": "UNLICENSED",
+  "private": true
 }

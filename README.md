@@ -1,7 +1,36 @@
-# AI 影片初剪助理 (DaVinci Resolve XML Workflow)
+# AI 訪談影片粗剪決策引擎 (DaVinci Resolve Workflow)
 
-> 專為 **DinoHappyKM** 團隊打造的行銷影音自動化剪輯助理。  
-> 透過 AI 語音辨識（A-roll 逐字稿時間戳）與 B-roll 空景情境智能標註，自動產生可在 **DaVinci Resolve** 一鍵匯入的初剪時間線 XML。
+> 用 AI 處理訪談逐字稿、Topic Mining、剪輯提案與原始時碼 mapping，由人選擇故事後，生成可在 **DaVinci Resolve 19–21** 匯入的 A-roll 粗剪，以及 Resolve 原生的 A/B 多機素材。
+>
+> Phase 0 已完成真實繁中素材的 A-roll XML round-trip；A/B 雙機改採 Resolve 原生 Multicam Clip，B-roll、字卡、音樂仍延後。
+
+## Phase 0 專案輸出
+
+`timeline.json` 是唯一剪輯 SSOT。匯出前會先檢查媒體是否存在、剪點是否有效、軌道是否重疊，並把 VFR 與人工復核項目列為 warning。
+
+```bash
+npm test
+npm run build:project -- "/absolute/path/to/PROJECT_001"
+```
+
+成功後會在該專案的 `export/<output_id>/` 產生：
+
+- DaVinci FCP 7 XML
+- SRT
+- `validation_report.json`
+- `edit_report.md`
+- 若 Project 同時有 `CAM_A` 與 `CAM_B`，另會產生 `multicam_manifest.json`。這不是 XML 的 V2 視訊軌，而是供 Resolve Script 建立原生 Multicam Clip 的契約。
+
+### A/B 多機位：必須使用 Resolve 原生 Multicam Clip
+
+FCP 7 XML 能描述一般影像軌道，**不能可靠地建立 DaVinci Resolve 的可切換 Multicam Clip**。因此系統刻意禁止把 `alternate_camera` 輸出成 V2 疊畫面。
+
+1. 腳本會依 manifest 自動在 Media Pool 尋找 A、B 原始檔；若目前專案是空的，會自動匯入，不修改來源檔。
+2. 由 `export/<output_id>/multicam_manifest.json` 產生 `Aperture` 原生 Multicam Clip：A 為 Angle 1／唯一節目主音訊，B 為 Angle 2，採 Sound Sync。
+3. 同一支腳本會把已核准的 A-roll 剪點套用到原生 Multicam Clip，建立可切換鏡位的 `Aperture_<topic>_<duration>` 粗剪時間線，並另存 `.drt`。
+4. 在時間線內核對嘴型後，再由剪輯師或後續 AI 切換角度；所有切換仍是 Resolve 多機剪輯，隨時可改回 A 或 B。
+
+執行腳本前，將 `scripts/resolve/create_aperture_multicam.lua` 與專案用的 `create_aperture_multicam.config.lua` 安裝成實體檔案到 Resolve 的 `Fusion/Scripts/Edit` 目錄。Lua 是目前 macOS Resolve 21 的主要執行路徑；Python 版保留給已啟用 Python／外部 Scripting API 的環境。重新啟動 Resolve 後從 `Workspace > Scripts > Edit > Create Aperture Multicam` 執行。腳本會優先沿用 Media Pool 已存在的 Multicam Clip，否則自動匯入 A/B 並建立；接著建立粗剪 Timeline 並輸出可再次匯入 Resolve 的 `.drt`，不會改動來源檔。
 
 ---
 
@@ -9,8 +38,8 @@
 
 - **AI 不生出死板成片**：AI 擔任**專業剪輯助理**，不負責直接渲染出片，而是梳理結構。
 - **排好時間線，交給人類微調**：
-  - **軌道 V1 (Video 1 + Audio 1)**：A-roll 說話主片（保留完整時間軸與說話節奏）。
-  - **軌道 V2 (Video 2)**：AI 依據口播逐字稿語意，在關鍵秒數精準疊加情境 B-roll（例如提到「數據轉換」自動切入「轉換率圖表」）。
+  - **A-roll XML (V1 + A1)**：已核准的說話主片與主音訊。
+  - **Aperture 原生 Multicam Clip**：Angle 1 是 A 機與主音訊；Angle 2 是 B 機。切鏡不是疊軌，能隨時在 Resolve 多機檢視中改選。
 - **匯入達芬奇即用（Zero-Copy）**：輸出標準 FCP 7 XML 格式，達芬奇直接引用外接硬碟原檔，秒開不佔本機磁碟。
 
 ---
@@ -36,7 +65,7 @@
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 🎬 DaVinci Resolve 匯入 XML ➔ 瞬間點亮雙軌時間線         │
+│ 🎬 DaVinci Resolve 匯入 XML + 建立原生 Multicam Clip      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -116,7 +145,7 @@ npm run demo
 1. 打開 **DaVinci Resolve**。
 2. 點選頂部選單：**`File (檔案)` ➔ `Import (匯入)` ➔ `Timeline... (時間線)`**（快捷鍵 `Ctrl + Shift + I` 或 `Cmd + Shift + I`）。
 3. 選擇產生的 `.xml` 檔案。
-4. 點選確定，時間線會自動建立雙軌道（V1 口播 + V2 情境 B-roll 覆蓋）！
+4. 點選確定，時間線會建立 V1 A 機主畫面／A1 主音訊。若有雙機，請依本文件的原生 Multicam 流程建立 `Aperture`，不要把 B 機疊在 V2。
 
 ---
 
