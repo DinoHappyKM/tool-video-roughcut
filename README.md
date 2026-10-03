@@ -1,3 +1,19 @@
+# AI 影片製作流程與粗剪原型
+
+> **目前工作入口：[從這裡開始](START_HERE.md)。**
+>
+> 流程文件 0.1.0（2026-10-03），狀態 draft。本次目的：建立可直接填寫的素材盤點、作品需求、剪輯決策、交付檢查與兩批試跑紀錄；完成標準與下一步見入口。
+>
+> 已採用方向：ChatCut Desktop 處理通用剪輯，依作品交給 DaVinci 精修，保留自建專案並以兩批實測決定開發缺口。
+>
+> **驗證邊界：**main 的現有程式是示範／XML 原型，真實處理入口尚未接完；另有尚未合併的 [PR #2](https://github.com/DinoHappyKM/tool-video-roughcut/pull/2)，包含專案輸出、驗證與 Resolve 原生多機工作，不能只按 main 判斷全部進度。其實機驗收紀錄待釐清，見 [目前狀態](docs/production/STATUS.md)。
+>
+> 下方為既有原型的設計與使用說明，描述目標，不等於本次已完成真實影片、跨平台連結或 DaVinci 匯入驗證。主流程請以新入口為準。不要為此任務格式化既有硬碟。
+>
+> **執行提醒：**既有 `npm run demo` 會寫入設定指定的 B-roll metadata；只在隔離副本／測試目錄執行，不能拿正式素材索引驗證。本次未執行 demo，也未改動原程式。
+
+---
+
 # AI 影片初剪助理 (DaVinci Resolve XML Workflow)
 
 > 專為 **DinoHappyKM** 團隊打造的行銷影音自動化剪輯助理。  
@@ -126,3 +142,4 @@ npm run demo
 2. **AI 情境分析**：執行掃描或多模態標記，更新 `assets/broll_metadata.json` 並 Commit 到 GitHub（全團隊共享標籤庫）。
 3. **產出初剪**：依據逐字稿時間戳執行 `npm run build:xml`，取得專案 XML。
 4. **精修與出片**：剪輯師插上 SSD，匯入 XML 即可在達芬奇中完成調色、音效與細部微調。
+
