@@ -15,6 +15,23 @@
 安裝檔已下載、程式已開啟、帳號登入、工具載入、工程回讀、可見編輯分別登記，不能相互代替。
 桌面版可以使用本機媒體，但登入、同步及部分 AI 功能仍需要網路。付費與點數依帳號當下顯示，未查明前保持待確認。
 
+## 選擇 Codex 或 ChatCut Agent
+
+這是在同一個 ChatCut Desktop 中選擇 AI 助理與額度來源。
+
+| 選項 | 對話與剪輯指令的額度 | 本計畫建議 |
+|---|---|---|
+| Codex | 自己 ChatGPT／Codex 帳號的可用額度；若改用 API 金鑰則另依 API 計費 | 教師先採用；學生帳號確認可用後作為主要路線 |
+| ChatCut Agent | ChatCut 點數，依模型、上下文與處理量變動 | 無可用 Codex 或偏好內建助理者的替代路線 |
+
+Codex 額度不是無限免費，也不因選用 Codex 就取得 ChatCut Pro 權益。兩者的理解、剪輯結果與修正成本仍須用同一素材比較，不能只憑名稱認定優劣。
+
+呼叫 ChatCut 託管的影片、音樂、音效或配音生成服務，仍可能消耗 ChatCut 點數；Codex 自己的生圖能力則依 OpenAI 額度。每次以作用中工具的確認內容與實際使用紀錄為準。先用自有素材及已授權音樂／音效完成試跑。
+
+ChatCut 內開啟的 Codex 對話與目前外部 Codex 對話是不同操作入口。不能假設整段歷史已自動帶入；開始時提供本工作流程、作品需求卡及素材位置。若要留在外部 Codex 對話操作，需另外驗證官方本機連接。之後可由編輯器的 Agent 選單更換助理，改方向前先儲存時間線版本。
+
+依據：[ChatCut Desktop](https://chatcut.io/docs/desktop-app)、[ChatCut 點數政策](https://chatcut.io/docs/credits-policy)、[OpenAI Codex 方案與額度](https://learn.chatgpt.com/docs/pricing)。查核日期：2026-10-03；學生帳號登入與課堂負載尚未實測。
+
 ## 交接前先選擇
 
 每部作品在需求卡指定：
