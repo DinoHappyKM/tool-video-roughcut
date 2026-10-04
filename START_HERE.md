@@ -1,6 +1,6 @@
 # AI 影片製作：從這裡開始
 
-流程文件版本：0.1.0｜更新：2026-10-03｜狀態：draft
+流程／技能版本：0.2.0｜更新：2026-10-04｜狀態：testing
 
 目的：用「自己的剪輯規範＋Codex／ChatCut Desktop＋必要時 DaVinci」處理單機、多機、一部或多部成片；以真實素材驗證後，再決定自建功能。
 完成標準：四張工作表可直接填寫，兩批試跑有可追溯紀錄，品質與工時分開驗收。文件完成不代表軟體、成片或教學環境已通過。
@@ -13,7 +13,9 @@
 4. 先完成 [素材盤點](docs/production/templates/01_ASSET_INVENTORY.md)，再和使用者討論作品方向。
 5. 依 [製作流程](docs/production/WORKFLOW.md) 完成初稿與交付；用 [試跑規範](docs/production/PILOT_PROTOCOL.md) 記錄實際結果。
 
-目前仍缺首輪素材路徑與可用的 ChatCut 連接；不要以示範資料代替真實剪輯測試。
+首輪已透過外部 MCP 使用真實 A/B 訪談素材，完成同步母版、兩部獨立初稿、包裝及 MP4／字幕輸出抽查；最終審片、第二批與 DaVinci 交接仍待完成。
+
+接續審片前先讀 [包裝與修改規則](docs/production/PACKAGING_RULES.md) 和 [首輪回饋](docs/production/pilots/PILOT_001_LESSONS.md)。本次新增 [Codex 技能入口](.agents/skills/video-production-pilot/SKILL.md)，引用本儲存庫的規則主檔；已更新來源不表示 ChatCut 技能庫已安裝或學生已重現。
 
 ## 四張共同工作表
 
@@ -37,4 +39,4 @@
 
 ## 開發範圍
 
-本次只建立流程、表單、試跑與教學準備文件，保留既有程式。至少兩批素材出現同一缺口且現成方法無法解決，再評估投入輔助工具。[變更紀錄](docs/production/CHANGELOG.md)
+本次維護流程、表單、試跑紀錄與薄技能入口，保留既有程式。至少兩批素材出現同一缺口且現成方法無法解決，再評估投入輔助工具。[變更紀錄](docs/production/CHANGELOG.md)

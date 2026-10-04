@@ -2,7 +2,7 @@
 
 > **目前工作入口：[從這裡開始](START_HERE.md)。**
 >
-> 流程文件 0.1.0（2026-10-03），狀態 draft。本次目的：建立可直接填寫的素材盤點、作品需求、剪輯決策、交付檢查與兩批試跑紀錄；完成標準與下一步見入口。
+> 流程／技能 0.2.0（2026-10-04），狀態 testing。本次目的：把首輪審片回饋整理成 [包裝與修改規則](docs/production/PACKAGING_RULES.md)、[Codex 技能入口](.agents/skills/video-production-pilot/SKILL.md) 與回歸檢查；完成標準與下一步見入口。
 >
 > 已採用方向：ChatCut Desktop 處理通用剪輯，依作品交給 DaVinci 精修，保留自建專案並以兩批實測決定開發缺口。
 >
