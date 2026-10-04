@@ -2,7 +2,7 @@
 
 > **目前工作入口：[從這裡開始](START_HERE.md)。**
 >
-> 流程／技能 0.2.0（2026-10-04），狀態 testing。本次目的：把首輪審片回饋整理成 [包裝與修改規則](docs/production/PACKAGING_RULES.md)、[Codex 技能入口](.agents/skills/video-production-pilot/SKILL.md) 與回歸檢查；完成標準與下一步見入口。
+> 流程／技能 0.3.0（2026-10-04），狀態 testing。本次目的：加入 [XML 素材自檢與必要轉檔](docs/production/XML_HANDOFF_RULES.md)，沿用包裝自檢，將本批正式作品 XML 成功回報記入 [驗收紀錄](docs/production/pilots/PILOT_001_XML.md)，並提供 [跨平台技能包](docs/production/DISTRIBUTION.md)。完成標準：技能與工作表可指導預檢、必要轉檔及實際來源更新；打包內容完整且可驗證。第二批與學生重現仍待完成。
 >
 > 已採用方向：ChatCut Desktop 處理通用剪輯，依作品交給 DaVinci 精修，保留自建專案並以兩批實測決定開發缺口。
 >

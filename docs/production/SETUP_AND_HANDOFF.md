@@ -1,6 +1,6 @@
 # ChatCut Desktop 連接與 DaVinci 交接
 
-更新：2026-10-03｜[目前狀態](STATUS.md)｜[入口](../../START_HERE.md)
+更新：2026-10-04｜[目前狀態](STATUS.md)｜[入口](../../START_HERE.md)
 
 ## Windows 連接檢查
 
@@ -41,6 +41,10 @@ ChatCut 內開啟的 Codex 對話與目前外部 Codex 對話是不同操作入�
 
 ChatCut 普通多軌、已切好的平面時間線、Resolve 原生 Multicam Clip 是不同交付，不得混稱。
 XML 交接若保留不到原生多機功能，先記錄限制，再選使用平面剪輯或既有自建 Resolve 路線；不宣稱會自動轉換。
+
+## XML 素材自檢
+
+有 XML 需求時，先按 [素材自檢與必要轉檔](XML_HANDOFF_RULES.md) 分辨解碼、來源匹配及功能缺失。必要轉檔另存並更新實際時間線；來源可用或只有引用錯誤時，避免無必要重編碼。匯出後核對路徑與範圍，再到目標軟體播放。本批成功回報見 [首輪交接結果](pilots/PILOT_001_XML.md)。
 
 ## DaVinci 交接包
 
