@@ -28,3 +28,6 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# Local production records, transcripts and exports (not canonical templates)
+/production-work/

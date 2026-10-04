@@ -1,0 +1,18 @@
+{
+  "sourceSkillFormat": "Skill is valid!",
+  "zipStructure": "驗證通過：ZIP 階層與基本跨平台規則正常。",
+  "canonicalMarkdownCount": 24,
+  "canonicalRelativeLinks": 117,
+  "deploymentSkillFormat": "Skill is valid!",
+  "manifestSourcesVerified": 23,
+  "macLF": true,
+  "macExecution": "not_tested_no_mac_environment",
+  "windowsInstallExactFiles": 23,
+  "windowsRepeatInstall": "passed_no_extra_layer",
+  "windowsExistingDifferentContent": "passed_rejected_without_mutation",
+  "privateMediaIncluded": false,
+  "nativeSkillDiscovery": "not_tested",
+  "version": "0.3.1",
+  "artifact": "video-production-pilot-v0.3.1.zip",
+  "artifactSha256": "2d7998f75149b620401338cfc08cc51a52d7e8668f4cc59a712c0c45fb35c94a"
+}
