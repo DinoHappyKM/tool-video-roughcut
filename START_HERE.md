@@ -1,6 +1,6 @@
 # AI 影片製作：從這裡開始
 
-流程／技能版本：0.3.0｜更新：2026-10-04｜狀態：testing
+流程／技能版本：0.3.1｜更新：2026-10-04｜狀態：testing
 
 目的：用「自己的剪輯規範＋Codex／ChatCut Desktop＋必要時 DaVinci」處理單機、多機、一部或多部成片；以真實素材驗證後，再決定自建功能。
 完成標準：四張工作表可直接填寫，兩批試跑有可追溯紀錄，品質與工時分開驗收。文件完成不代表軟體、成片或教學環境已通過。
@@ -14,6 +14,8 @@
 5. 依 [製作流程](docs/production/WORKFLOW.md) 完成初稿與交付；用 [試跑規範](docs/production/PILOT_PROTOCOL.md) 記錄實際結果。
 
 首輪已用真實 A/B 訪談素材完成同步母版、兩部獨立作品及輸出抽查；相容 B-roll 換入正式短長版後，使用者已回報 XML／DaVinci 最後測試成功。該回報不代替每項效果、完整品質、第二批或學生環境驗收。見 [交接結果](docs/production/pilots/PILOT_001_XML.md)。
+
+0.3.1 補上逐版本字幕核對：本次兩份較早包裝 v1 的偏左字幕已補正，新版 v2 通過不能代表舊包裝稿；預覽、實際輸出與完整播放分開記錄。
 
 接續審片前先讀 [包裝與修改規則](docs/production/PACKAGING_RULES.md) 和 [首輪回饋](docs/production/pilots/PILOT_001_LESSONS.md)。需要 XML 時主動執行 [素材自檢與必要轉檔](docs/production/XML_HANDOFF_RULES.md)：檢查媒體與引用，建立必要副本並真正更新時間線，字幕／聲音另訂交接方案。[打包與安裝](docs/production/DISTRIBUTION.md)。
 

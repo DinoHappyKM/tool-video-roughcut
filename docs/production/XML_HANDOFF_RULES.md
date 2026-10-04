@@ -1,6 +1,6 @@
 # XML 交接：素材自檢與必要轉檔
 
-版本：0.3.0｜更新：2026-10-04｜[流程](WORKFLOW.md)｜[交付表](templates/04_DELIVERY_CHECKLIST.md)
+版本：0.3.1｜更新：2026-10-04｜[流程](WORKFLOW.md)｜[交付表](templates/04_DELIVERY_CHECKLIST.md)
 
 當需求卡指定 XML／DaVinci／其他 NLE 交接，或使用者準備匯出 XML 時主動執行。素材盤點便先標記可能的問題，交付前依最新工程再次檢查；不等到使用者遇到離線才處理。只有影片出片、沒有 XML 需求時不強制轉檔。
 

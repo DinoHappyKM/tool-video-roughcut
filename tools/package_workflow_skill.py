@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib,json,posixpath,re,zipfile,tempfile
 from urllib.parse import unquote,quote
 ROOT=Path(__file__).resolve().parents[1]
-VERSION="0.3.0";SLUG="video-production-pilot";ROOTNAME=f"{SLUG}-v{VERSION}"
+VERSION="0.3.1";SLUG="video-production-pilot";ROOTNAME=f"{SLUG}-v{VERSION}"
 SKILL=ROOT/".agents"/"skills"/SLUG/"SKILL.md"
 LINK=re.compile(r"(!?\[[^\]]*\]\()([^)\n]+)(\))")
 REPO="https://github.com/DinoHappyKM/tool-video-roughcut/blob/codex/production-workflow-pilot/"
@@ -72,7 +72,7 @@ echo '在 Codex 打開此專案，請使用 $video-production-pilot；原生發�
 '''.replace('§','$')
 INSTALL="""# AI 影片製作試跑技能｜安裝說明
 
-版本：0.3.0。先解壓縮整包，再執行對應平台安裝。包內沒有影片或編輯器，ChatCut Desktop 連線與素材另行準備。
+版本：0.3.1。先解壓縮整包，再執行對應平台安裝。包內沒有影片或編輯器，ChatCut Desktop 連線與素材另行準備。
 
 ## Windows
 

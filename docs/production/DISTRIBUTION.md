@@ -1,10 +1,10 @@
 # 技能打包與安裝
 
-版本：0.3.0｜[入口](../../START_HERE.md)
+版本：0.3.1｜[入口](../../START_HERE.md)
 
 ## 取得套件
 
-[下載跨平台技能 ZIP](../../dist/video-production-pilot-v0.3.0.zip)｜[校驗值](../../dist/SHA256SUMS.txt)
+[下載跨平台技能 ZIP](../../dist/video-production-pilot-v0.3.1.zip)｜[校驗值](../../dist/SHA256SUMS.txt)
 
 GitHub 目前為私人儲存庫；有權限者可從上述 ZIP 頁面下載原始檔，學生可取得老師分發的同一份 ZIP，不要求先開放私人專案。
 
